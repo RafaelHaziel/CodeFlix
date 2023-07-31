@@ -1,51 +1,33 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using CodeFlix.Models;
+﻿using CodeFlix.Interfaces;
+using CodeFlix.Repositories;
 
-namespace CodeFlix.Controllers;
+var builder = WebApplication.CreateBuilder(args);
 
-public class HomeController : Controller
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+
+builder.Services.AddTransient<IGenreRepository, GenreRepository>();
+builder.Services.AddTransient<IMovieRepository, MovieRepository>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
 {
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(ILogger<HomeController> logger)
-    {
-        _logger = logger;
-    }
-
-    public IActionResult Index()
-    {
-        List<Genre> genres = new()
-        {
-            new Genre()
-            {
-                Id = 1,
-                Name = "Ação"
-            },
-            new Genre()
-            {
-                Id = 2,
-                Name = "Terror"
-            }
-        };
-        genres.Add(
-            new Genre()
-            {
-                Id = 3,
-                Name = "Drama"
-            }
-        );
-        return View(genres);
-    }
-
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-    }
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
 }
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();

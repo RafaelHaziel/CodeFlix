@@ -1,3 +1,4 @@
+using System.Data;
 using CodeFlix.Interfaces;
 using CodeFlix.Models;
 using MySql.Data.MySqlClient;
@@ -6,58 +7,103 @@ namespace CodeFlix.Repositories;
 
 public class GenreRepository : IGenreRepository
 {
-   string connectionString = "server=localhost;port=3306;database=codeflixdb;uid=root;pwd=''";
+    readonly string connectionString = "server=localhost;port=3306;database=CodeFlixdb;uid=root;pwd=''";
 
-   public void Create(Genre model)
-   {
-       using (MySqlConnection connection = new (connectionString))
-       {
-            string sql = "insert into genre(name) values(@name)";
-            MySqlCommand command = new(sql, connection);
-            command.CommandType = System.Data.CommandType.Text;
-            command.Parameters.AddWithValue("@name", model.Name);
-            connection.Open();
-            command.ExecuteNonQuery();
-            connection.Close();
-       }
-   }
+    public void Create(Genre model)
+    {
+        MySqlConnection connection = new(connectionString);
+        string sql = "insert into Genre(Name) values (@Name)";
+        MySqlCommand command = new(sql, connection)
+        {
+            CommandType = CommandType.Text
+        };
+        command.Parameters.AddWithValue("@Name", model.Name);
+        
+        connection.Open();
+        command.ExecuteNonQuery();
+        connection.Close();
+    }
 
-   public void Delete(int? id)
-   {
-       using (MySqlConnection connection = new(connectionString))
-       {
-           var sql = "delete from genre where id = @id";
-           MySqlCommand command = new(sql, connection);
-           command.CommandType = System.Data.CommandType.Text;
-           command.Parameters.AddWithValue("@id", id);
-           connection.Open();
-           command.ExecuteNonQuery();
-           connection.Close();
-       }
-   }
+    public void Delete(int? id)
+    {
+        MySqlConnection connection = new(connectionString);
+        string sql = "delete from Genre where Id = @Id";
+        MySqlCommand command = new(sql, connection)
+        {
+            CommandType = CommandType.Text
+        };
+        command.Parameters.AddWithValue("@Id", id);
+        
+        connection.Open();
+        command.ExecuteNonQuery();
+        connection.Close();
+    }
 
     public List<Genre> ReadAll()
     {
-        List<Genre> genres = new();
-        using (MySqlConnection connection = new(connectionString))
+        MySqlConnection connection = new(connectionString);
+        string sql = "select * from Genre";
+        MySqlCommand command = new(sql, connection)
         {
-            var sql = "select * from genre";
-            MySqlCommand command = new(sql, connection);
-            command.CommandType = System.Data.CommandType.Text;
-            connection.Open();
-            MySqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+            CommandType = CommandType.Text
+        };
+        
+        List<Genre> genres = new();
+        connection.Open();
+        MySqlDataReader reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            Genre genre = new()
             {
-                genres.Add(
-                    new Genre()
-                    {
-                        Id = Convert.ToByte(reader["id"]),
-                        Name = reader["name"].ToString()
-                    }
-                );
-            }
-            connection.Close();
+                Id = reader.GetByte("id"),
+                Name = reader.GetString("name")
+            };
+            genres.Add(genre);
         }
+        connection.Close();
         return genres;
+    }
+
+    public Genre ReadById(int? id)
+    {
+        MySqlConnection connection = new(connectionString);
+        string sql = "select * from Genre where Id = @Id";
+        MySqlCommand command = new(sql, connection)
+        {
+            CommandType = CommandType.Text
+        };
+        command.Parameters.AddWithValue("@Id", id);
+        
+        connection.Open();
+        MySqlDataReader reader = command.ExecuteReader();
+        reader.Read();
+        if (reader.HasRows)
+        {
+            Genre genre = new()
+            {
+                Id = reader.GetByte("id"),
+                Name = reader.GetString("name")
+            };
+            connection.Close();
+            return genre;
+        }
+        connection.Close();
+        return null;
+    }
+
+    public void Update(Genre model)
+    {
+        MySqlConnection connection = new(connectionString);
+        string sql = "update Genre set Name = @Name where Id = @Id";
+        MySqlCommand command = new(sql, connection)
+        {
+            CommandType = CommandType.Text
+        };
+        command.Parameters.AddWithValue("@Id", model.Id);
+        command.Parameters.AddWithValue("@Name", model.Name);
+        
+        connection.Open();
+        command.ExecuteNonQuery();
+        connection.Close();
     }
 }

@@ -1,19 +1,16 @@
-
 namespace CodeFlix.Interfaces;
 
-public interface IRepository<T> where T : class 
+public interface IRepository<T> where T : class
 {
-    // CRUD (CREATE, READ, UPDATE, DELETE)
-    // Create - Adicionar novo Dado
-    void Add(T model);
+    // CRUD: CREATE, READ, UPADTE, DELETE 
+    // 4 Operações básicas de todo banco de dados
+    void Create(T model); // Add 
 
-    // Read - Leitura de Dados
-    List<T> ReadAll();
-    T ReadById(int? id);
+    List<T> ReadAll(); // Get 
 
-    // Update - Atualizar um Dado
-    void Update(T model);
+    T ReadById(int? id); // Get(id)
 
-    // Delete - Excluir Dado
+    void Update(T model); //Edit
+
     void Delete(int? id);
 }
