@@ -1,14 +1,14 @@
 using CodeFlix.Interfaces;
 using CodeFlix.Repositories;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddTransient<IMovieGenreRepository, MovieGenreRepository>();
 builder.Services.AddTransient<IGenreRepository, GenreRepository>();
 builder.Services.AddTransient<IMovieRepository, MovieRepository>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,33 +1,43 @@
-﻿using CodeFlix.Interfaces;
-using CodeFlix.Repositories;
+﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+using CodeFlix.Models;
+using CodeFlix.Interfaces;
 
-var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+namespace CodeFlix.Controllers;
 
-builder.Services.AddTransient<IGenreRepository, GenreRepository>();
-builder.Services.AddTransient<IMovieRepository, MovieRepository>();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+public class HomeController : Controller
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    private readonly ILogger<HomeController> _logger;
+    private readonly IMovieRepository _movieRepository;
+
+    public HomeController(ILogger<HomeController> logger, IMovieRepository movieRepository)
+    {
+        _logger = logger;
+        _movieRepository = movieRepository;
+    }
+
+    public IActionResult Index()
+    {
+        var movies = _movieRepository.ReadAllDetailed();
+        return View(movies);
+    }
+
+    public IActionResult Movie(int id)
+    {
+        var movie  = _movieRepository.ReadByIdDetailed(id);
+        return View(movie);
+    }
+
+    public IActionResult Privacy()
+    {
+        return View();
+    }
+
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public IActionResult Error()
+    {
+        _logger.LogError("Ocorreu um erro");
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+    }
 }
-
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.UseAuthorization();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.Run();
